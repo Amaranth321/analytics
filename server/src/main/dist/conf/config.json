@@ -1,0 +1,32 @@
+{
+  "event-server": {
+    "host": "127.0.0.1",
+    "port": 7474
+  },
+  "core-engine": {
+    "stream-control-server": {
+      "host": "127.0.0.1",
+      "port": 10600
+    }
+  },
+  "mongo": {
+    "host": "127.0.0.1",
+    "port": 27017
+  },
+  "streaming": {
+    "url-ttl-secs": 600,
+    "expiry-check-freq-secs": 30
+  },
+  "vca": {
+    "thrift-server-port": 7475,
+    "concurrent-process-limit": 100,
+    "periodic-job-thread-pool": 2,
+    "run-on-gpu":true
+  },
+  "ignorable-vca-errors": [
+    "Corrupt JPEG data",
+    "write: Broken pipe",
+    "[0m",
+    "[1;31m"
+  ]
+}

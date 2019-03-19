@@ -1,0 +1,32 @@
+# IDE files #
+###################
+*.idea/
+*out/
+*.iml
+/bin
+.classpath
+.project
+.settings
+
+# Gradle #
+###########################
+.gradle/
+build/
+classes/
+
+# general #
+###################
+*.log
+*.log.*
+
+# VcaServer #
+###################
+server/resources/
+server/tmp/
+server/src/main/resources/vca/apps/
+server/src/main/resources/vca/KAI_X1
+server/src/main/resources/vca/KAI_X2
+
+# Packaging #
+###################
+build-ks

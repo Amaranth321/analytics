@@ -1,0 +1,10 @@
+archivesBaseName = "app-peoplecount"
+version = "0.3.3"
+
+dependencies {
+    compile project(":shared")
+    compile project(":sdk")
+    compile name: "jspf.core-1.0.2"
+}
+
+jar.finalizedBy(moveAppToServer)

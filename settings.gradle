@@ -1,0 +1,8 @@
+include ":apps/passerby"
+include ":apps/peoplecount"
+include ":apps/audienceprofiling"
+//include ":apps/objectdetection"
+include ":shared"
+include ":sdk"
+include ":VcaCommons"
+include ":server"

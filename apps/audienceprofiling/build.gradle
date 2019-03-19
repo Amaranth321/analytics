@@ -1,0 +1,12 @@
+archivesBaseName = "app-audienceprofiling"
+//version = "0.3.3"
+version = "0.0.2"
+
+dependencies {
+    compile project(":shared")
+    compile project(":sdk")
+    compile name: "jspf.core-1.0.2"
+    compile project(":server")
+}
+
+jar.finalizedBy(moveAppToServer)

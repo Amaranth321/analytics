@@ -1,0 +1,247 @@
+plugins {
+    id 'java'
+	id 'distribution'
+}
+
+configurations {
+    ftpAntTask
+}
+
+dependencies {
+    compile project(":shared")
+    compile project(":sdk")
+    compile project(":VcaCommons")
+    compile name: 'jspf.core-1.0.2'
+    compile 'com.google.code.gson:gson:2.8.1'
+    compile 'com.google.code.morphia:morphia:0.104'
+    compile 'commons-cli:commons-cli:1.4'
+    compile 'commons-io:commons-io:2.5'
+    compile 'joda-time:joda-time:2.9.9'
+    compile 'org.apache.commons:commons-exec:1.3'
+    compile 'org.apache.commons:commons-lang3:3.6'
+    compile 'org.apache.logging.log4j:log4j-api:2.8.2'
+    runtime 'org.apache.logging.log4j:log4j-core:2.8.2'
+    compile 'org.apache.thrift:libthrift:0.8.0'
+    compile 'org.mongodb:mongodb-driver:3.4.2'
+    runtime 'org.slf4j:slf4j-log4j12:1.7.25'
+
+    ftpAntTask("org.apache.ant:ant-commons-net:1.9.9") {
+        module("commons-net:commons-net:3.6") {
+        }
+    }
+}
+
+ext {
+    serverAppDir = "$projectDir/src/main/resources/vca/apps" as File
+    serverKaiX1LibDir = "$projectDir/src/main/resources/vca/KAI_X1" as File
+    serverKaiX2LibDir = "$projectDir/src/main/resources/vca/KAI_X2" as File
+    serverKaiX3LibDir = "$projectDir/src/main/resources/vca/KAI_X3" as File
+    serverDownloadDir = "$buildDir/downloads" as File
+    packageOutputDir = "$rootDir/build-ks" as File
+}
+
+// java plugin
+archivesBaseName = 'kup-analytics'
+
+jar {
+    manifest {
+        attributes(
+			'Main-Class': 'com.kaisquare.vca.VcaServer',
+			'Class-Path': 'conf/'
+		) 
+    }
+    from {
+        configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+// distribution plugin
+distZip.enabled = false
+
+distributions {
+	main {
+		baseName = archivesBaseName
+		contents { from jar }
+	}
+}
+
+distTar {
+	compression = Compression.GZIP
+}
+
+/**
+ *
+ * Tasks
+ *
+ */
+
+ 
+task cleanGeneratedFiles(type: Delete) {
+    doFirst {
+        printTaskStarted(name)
+
+        //run-generated
+        projectDir.listFiles(new FileFilter() {
+            @Override
+            boolean accept(File pathname) {
+                List<String> ignoreList = Arrays.asList("build", "src", "build.gradle")
+                return !ignoreList.contains(pathname.getName())
+            }
+        }).each { File file ->
+            println("Deleting $file")
+            delete file
+        }
+
+        //apps
+        delete serverAppDir
+
+        //downloaded libraries
+        //delete serverKaiX1LibDir, serverKaiX2LibDir
+
+        //deploy folder
+        delete packageOutputDir
+    }
+}
+
+//task downloadVcaPackages(type: Delete) {
+//    // files to download
+//    def kx1Params = "vca_defaultparams.zip"
+//    def kx1Linux = "vca_linux.zip"
+//    def kx1Win = "vca_win.zip"
+//
+//    def kx2Linux = "acv_linux.zip"
+//    def kx2Win = "acv_win.zip"
+//
+//    def kx3Linux = "kaix3_acv_linux.zip"
+//    doFirst {
+//        printTaskStarted(name)
+//
+//        //println("Clearing downloads")
+//        //delete serverDownloadDir
+//
+//        //println("Clearing vca packages")
+//        //delete serverKaiX1LibDir, serverKaiX2LibDir
+//    }
+//    doLast {
+//        def ftpServer = System.getProperty("ftp_host")
+//        def ftpPort =  System.getProperty("ftp_port")
+//        def ftpUsername =  System.getProperty("ftp_username")
+//        def ftpPassword =  System.getProperty("ftp_password")
+//        def ftpRemoteDir = System.getProperty("ftp_vca_dir")
+//
+//        println("server     : $ftpServer")
+//        println("port       : $ftpPort")
+//        println("username   : $ftpUsername")
+//        println("directory  : $ftpRemoteDir")
+//
+//        println("Downloading packages")
+//        ant {
+//            taskdef(name: 'ftp',
+//                    classname: 'org.apache.tools.ant.taskdefs.optional.net.FTP',
+//                    classpath: configurations.ftpAntTask.asPath)
+//
+//            ftp(server: ftpServer,
+//                port: ftpPort,
+//                userid: ftpUsername,
+//                password: ftpPassword,
+//                remotedir: ftpRemoteDir,
+//                action: 'get',
+//                passive: "yes",
+//                depends: "yes",
+//                verbose: "yes") {
+//
+//                if (includeWindowLibs) {
+//                    fileset(dir: serverDownloadDir) {
+//                        include(name: kx1Params)
+//                        include(name: kx1Win)
+//                        include(name: kx1Linux)
+//                        include(name: kx2Win)
+//                        include(name: kx2Linux)
+//                    }
+//                } else {
+//                    fileset(dir: serverDownloadDir) {
+//                        include(name: kx1Params)
+//                        include(name: kx1Linux)
+//                        include(name: kx2Linux)
+//                        include(name: kx3Linux)
+//                    }
+//                }
+//            }
+//        }
+//
+//        File[] vcaZipFiles = serverDownloadDir.listFiles()
+//        for (File zipFile : vcaZipFiles) {
+//            def destDir = null;
+//            switch (zipFile.name) {
+//                case kx1Params:
+//                    destDir = "$serverKaiX1LibDir/defaultparams"
+//                    break;
+//
+//                case kx1Linux:
+//                    destDir = "$serverKaiX1LibDir/linux"
+//                    break;
+//
+//                case kx1Win:
+//                    destDir = "$serverKaiX1LibDir/win"
+//                    break;
+//
+//                case kx2Linux:
+//                    destDir = "$serverKaiX2LibDir/linux"
+//                    break;
+//
+//                case kx2Win:
+//                    destDir = "$serverKaiX2LibDir/win"
+//                    break;
+//                case kx3Linux:
+//                    destDir = "$serverKaiX3LibDir/linux"
+//                    break;
+//                default:
+//                    continue;
+//            }
+//
+//            println("Unpacking '$zipFile.name' into '$destDir'")
+//            copy {
+//                from zipTree("$zipFile")
+//                into destDir
+//            }
+//        }
+//
+//		println("vca libraries updated")
+//    }
+//}
+
+task movePackage {
+    doFirst {
+        printTaskStarted(name)
+    }
+    doLast {
+        def jarDir = "$buildDir/distributions"
+        println("Moving '$jarDir' to '$packageOutputDir'")
+		
+		copy {
+            from jarDir
+            into packageOutputDir
+        }
+    }
+}
+
+/**
+ *
+ * Helper functions
+ *
+ */
+def printTaskStarted(taskName) {
+    println("----")
+    println("# Running task ($taskName)")
+}
+
+/**
+ *
+ * Task dependencies
+ *
+ */
+clean.dependsOn(cleanGeneratedFiles)
+
+//jar.mustRunAfter(downloadVcaPackages)
+//jar.dependsOn(downloadVcaPackages)
+build.finalizedBy(movePackage)

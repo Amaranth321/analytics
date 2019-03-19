@@ -1,0 +1,39 @@
+plugins {
+	id 'java'
+	id 'com.github.ben-manes.versions' version '0.20.0' apply false
+}
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'com.github.ben-manes.versions'
+	
+	group = 'com.kaisquare'
+    version = '2.0.0'
+	
+	// java plugin
+	compileJava.options.encoding = 'UTF-8'
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
+    repositories {
+        //only for jars that are not on maven central
+        flatDir {
+            dirs "$rootProject.projectDir/jars"
+        }
+
+        jcenter()
+    }
+
+    ext {
+        includeWindowLibs = false
+    }
+
+    task moveAppToServer {
+        doLast {
+            copy {
+                from "$buildDir/libs"
+                into project(":server").ext.serverAppDir
+            }
+        }
+    }
+}
